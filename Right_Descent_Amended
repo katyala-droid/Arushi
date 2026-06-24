@@ -153,23 +153,23 @@ def main():
         for step_idx, descent_str in enumerate(step_descents):
             all_targets[i, step_idx] = string_to_soft_vector(descent_str)
             
-    print(f"Generation Complete! Converting matrices into PyTorch tensors...")
+    print(f"Generation Complete! Structuring into paired columns...")
     
-    # Convert numpy structures cleanly to PyTorch tensors
-    inputs_tensor = torch.from_numpy(all_inputs)
-    targets_tensor = torch.from_numpy(all_targets)
+    # Create a structured list of records (Rows)
+    # Column 1: "letters" (the original string or token list)
+    # Column 2: "descent_vectors" (the list of 20 probability vectors)
+    dataset_records = []
     
-    print(f"Final Input Tensor Shape: {inputs_tensor.shape}")   # Expected: [50000, 20]
-    print(f"Final Target Tensor Shape: {targets_tensor.shape}") # Expected: [50000, 20, 3]
-    
-    # Save directly as a unified dataset dictionary file
-    dataset_payload = {
-        "inputs": inputs_tensor,
-        "targets": targets_tensor
-    }
-    torch.save(dataset_payload, "soft_descent_dataset.pt")
-    
-    print(f"Dataset successfully compiled and stored as 'soft_descent_dataset.pt'!")
+    for i in range(instances):
+        record = {
+            "letters": all_inputs[i].tolist(),          # List of 20 token IDs
+            "descent_vectors": all_targets[i].tolist()  # List of 20 probability vectors
+        }
+        dataset_records.append(record)
+        
+    # Save this structured list directly
+    torch.save(dataset_records, "soft_descent_dataset_paired.pt")
+    print(f"Dataset successfully compiled and stored as a paired list of records!")
     print(f"Total processing elapsed time: {t.elapsed():.2f} seconds.")
 
 if __name__ == "__main__":
